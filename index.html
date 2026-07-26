@@ -1,0 +1,576 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>PromptBar › Turn rough thoughts into prompts that work</title>
+<meta name="description" content="A native macOS menu bar prompt compiler. Press a shortcut, get three usable prompts, copy one. Runs entirely on Apple's on-device model — no account, no network.">
+<link rel="icon" href="assets/icon.svg" type="image/svg+xml">
+<link rel="apple-touch-icon" href="assets/icon.png">
+
+<meta property="og:type" content="website">
+<meta property="og:title" content="PromptBar — Turn rough thoughts into prompts that work">
+<meta property="og:description" content="A native macOS menu bar prompt compiler, powered by Apple's on-device model.">
+<meta property="og:image" content="https://tornikegomareli.github.io/promptbar-landing/assets/result.png">
+<meta property="og:url" content="https://tornikegomareli.github.io/promptbar-landing/">
+<meta name="twitter:card" content="summary_large_image">
+
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Instrument+Serif:ital@0;1&family=Inter:wght@400;500;600&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
+
+<style>
+  *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+  :root {
+    --bg: #090909;
+    --bg-lift: #0e0e0e;
+    --line: rgba(255,255,255,0.09);
+    --line-soft: rgba(255,255,255,0.055);
+    --fg: #f4f2ee;
+    --fg-dim: rgba(244,242,238,0.56);
+    --fg-faint: rgba(244,242,238,0.34);
+    --amber: #e8a251;
+    --sans: "Inter", -apple-system, BlinkMacSystemFont, "Helvetica Neue", sans-serif;
+    --serif: "Instrument Serif", "Iowan Old Style", Georgia, serif;
+    --mono: "JetBrains Mono", ui-monospace, "SF Mono", Menlo, monospace;
+    --page: 1120px;
+    --gutter: 28px;
+  }
+
+  html { -webkit-text-size-adjust: 100%; scroll-behavior: smooth; }
+
+  body {
+    background: var(--bg);
+    color: var(--fg);
+    font-family: var(--sans);
+    font-size: 16px;
+    line-height: 1.6;
+    -webkit-font-smoothing: antialiased;
+    -moz-osx-font-smoothing: grayscale;
+    overflow-x: hidden;
+  }
+
+  a { color: inherit; text-decoration: none; }
+
+  .wrap { max-width: var(--page); margin: 0 auto; padding: 0 var(--gutter); }
+
+  /* Mono micro-label, e.g. 01 / SECURITY */
+  .eyebrow {
+    font-family: var(--mono);
+    font-size: 11px;
+    letter-spacing: 0.14em;
+    text-transform: uppercase;
+    color: var(--fg-faint);
+  }
+
+  /* ---------------- header ---------------- */
+
+  header {
+    position: sticky; top: 0; z-index: 50;
+    background: rgba(9,9,9,0.72);
+    backdrop-filter: saturate(180%) blur(16px);
+    -webkit-backdrop-filter: saturate(180%) blur(16px);
+    border-bottom: 1px solid var(--line-soft);
+  }
+  .bar {
+    height: 68px; display: flex; align-items: center;
+    justify-content: space-between; gap: 20px;
+  }
+  .wordmark { display: flex; align-items: center; gap: 11px; }
+  .wordmark img { width: 26px; height: 26px; border-radius: 7px; display: block; }
+  .wordmark span {
+    font-family: var(--serif);
+    font-size: 25px;
+    letter-spacing: 0.01em;
+    line-height: 1;
+  }
+  .nav { display: flex; align-items: center; gap: 26px; }
+  .nav a:not(.btn) { font-size: 14px; color: var(--fg-dim); transition: color .18s; }
+  .nav a:not(.btn):hover { color: var(--fg); }
+
+  .btn {
+    display: inline-flex; align-items: center; gap: 8px;
+    font-size: 14px; font-weight: 500;
+    padding: 9px 17px; border-radius: 999px;
+    border: 1px solid var(--line);
+    color: var(--fg);
+    transition: background .18s, border-color .18s, transform .18s;
+    white-space: nowrap;
+  }
+  .btn:hover { background: rgba(255,255,255,0.06); border-color: rgba(255,255,255,0.2); }
+  .btn-solid { background: var(--fg); color: #0b0b0b; border-color: var(--fg); font-weight: 600; }
+  .btn-solid:hover { background: #fff; border-color: #fff; transform: translateY(-1px); }
+
+  /* ---------------- hero ---------------- */
+
+  .hero { padding: 132px 0 0; text-align: center; }
+  .hero .eyebrow { display: block; margin-bottom: 30px; }
+
+  h1 {
+    font-family: var(--serif);
+    font-weight: 400;
+    font-size: clamp(46px, 8.2vw, 104px);
+    line-height: 0.98;
+    letter-spacing: -0.018em;
+    text-wrap: balance;
+  }
+  h1 em { font-style: italic; color: var(--fg-dim); }
+
+  .lede {
+    margin: 30px auto 0;
+    max-width: 630px;
+    font-size: clamp(16px, 1.9vw, 18.5px);
+    color: var(--fg-dim);
+    text-wrap: pretty;
+  }
+
+  .cta { margin-top: 40px; display: flex; justify-content: center; gap: 12px; flex-wrap: wrap; }
+
+  /* copy-to-clipboard install line */
+  .cmd {
+    display: inline-flex; align-items: center; gap: 12px;
+    font-family: var(--mono); font-size: 13.5px;
+    padding: 10px 14px 10px 18px;
+    border: 1px solid var(--line); border-radius: 999px;
+    background: var(--bg-lift); color: var(--fg-dim);
+    cursor: pointer; transition: border-color .18s, color .18s;
+  }
+  .cmd:hover { border-color: rgba(255,255,255,0.24); color: var(--fg); }
+  .cmd .dollar { color: var(--fg-faint); }
+  .cmd .copy {
+    font-family: var(--sans); font-size: 11px; letter-spacing: .04em;
+    text-transform: uppercase; color: var(--fg-faint);
+    border-left: 1px solid var(--line); padding-left: 12px;
+  }
+  .cmd.copied .copy { color: var(--amber); }
+
+  .hero-shot { margin-top: 84px; }
+
+  /* The app is a translucent floating panel, so the screenshots are dark PNGs
+     with alpha. They need a lit surface behind them to read at all — which
+     also shows the panel for what it is: something floating over your work. */
+  .frame {
+    border: 1px solid var(--line);
+    border-radius: 16px;
+    padding: clamp(16px, 3.6vw, 46px);
+    background:
+      radial-gradient(120% 105% at 12% -10%, rgba(104,116,255,0.20), transparent 58%),
+      radial-gradient(95% 90% at 92% 108%, rgba(232,162,81,0.10), transparent 55%),
+      linear-gradient(180deg, #17171d, #101014);
+    overflow: hidden;
+    box-shadow: 0 40px 120px rgba(0,0,0,0.6);
+  }
+  .frame img {
+    display: block; width: 100%; height: auto;
+    filter: drop-shadow(0 22px 48px rgba(0,0,0,0.6));
+  }
+
+  /* ---------------- trust strip ---------------- */
+
+  .strip {
+    margin-top: 96px;
+    border-top: 1px solid var(--line-soft);
+    border-bottom: 1px solid var(--line-soft);
+    padding: 22px 0;
+  }
+  .strip .wrap {
+    display: flex; gap: 14px 42px; flex-wrap: wrap;
+    justify-content: center; align-items: center;
+  }
+  .strip span {
+    font-family: var(--mono); font-size: 11.5px;
+    letter-spacing: 0.1em; text-transform: uppercase;
+    color: var(--fg-faint);
+  }
+
+  /* ---------------- narrative ---------------- */
+
+  .narrative { padding: 130px 0 110px; }
+  .narrative p {
+    font-size: clamp(25px, 4.1vw, 46px);
+    line-height: 1.28;
+    letter-spacing: -0.015em;
+    color: var(--fg-faint);
+    text-wrap: balance;
+  }
+  .narrative b {
+    font-weight: 400; color: var(--fg);
+    background: rgba(255,255,255,0.07);
+    border: 1px solid var(--line);
+    border-radius: 9px;
+    padding: 0 10px 3px;
+    position: relative;
+  }
+  .narrative sup {
+    font-family: var(--mono); font-size: 0.34em;
+    color: var(--fg-faint); margin-left: 4px; top: -0.9em;
+  }
+
+  /* ---------------- feature sections ---------------- */
+
+  .feature { padding: 80px 0; border-top: 1px solid var(--line-soft); }
+  .feature .wrap {
+    display: grid;
+    grid-template-columns: minmax(0, 0.82fr) minmax(0, 1.18fr);
+    gap: 72px; align-items: center;
+  }
+  .feature .copy-col { position: sticky; top: 120px; }
+  .feature h2 {
+    margin-top: 18px;
+    font-size: clamp(26px, 3.1vw, 35px);
+    font-weight: 600; line-height: 1.15;
+    letter-spacing: -0.022em;
+    text-wrap: balance;
+  }
+  .feature p.body { margin-top: 16px; color: var(--fg-dim); font-size: 16.5px; }
+
+  .caps { margin-top: 46px; }
+  .caps > span { font-size: 14.5px; font-weight: 500; }
+  .caps hr { border: 0; border-top: 1px solid var(--line); margin: 13px 0 16px; }
+  .caps ul {
+    list-style: none; display: grid;
+    grid-template-columns: 1fr 1fr; gap: 9px 20px;
+  }
+  .caps li { color: var(--fg-dim); font-size: 14.5px; }
+
+  /* ---------------- privacy ---------------- */
+
+  .privacy { padding: 110px 0; border-top: 1px solid var(--line-soft); }
+  .privacy h2 {
+    font-family: var(--serif); font-weight: 400;
+    font-size: clamp(34px, 5vw, 58px);
+    line-height: 1.02; letter-spacing: -0.02em;
+    margin-top: 22px;
+  }
+  .privacy h2 em { font-style: italic; color: var(--fg-dim); }
+  .cards {
+    margin-top: 60px; display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+    gap: 1px; background: var(--line-soft);
+    border: 1px solid var(--line-soft); border-radius: 14px; overflow: hidden;
+  }
+  .card { background: var(--bg); padding: 30px 28px; }
+  .card h3 { font-size: 15px; font-weight: 600; margin-bottom: 9px; }
+  .card p { font-size: 14.5px; color: var(--fg-dim); }
+
+  /* ---------------- install ---------------- */
+
+  .install { padding: 110px 0; border-top: 1px solid var(--line-soft); text-align: center; }
+  .install h2 {
+    font-family: var(--serif); font-weight: 400;
+    font-size: clamp(34px, 5.4vw, 62px);
+    line-height: 1.02; letter-spacing: -0.02em;
+  }
+  .install > .wrap > p { margin: 20px auto 0; max-width: 500px; color: var(--fg-dim); }
+
+  pre {
+    margin: 40px auto 0; max-width: 560px; text-align: left;
+    background: var(--bg-lift);
+    border: 1px solid var(--line);
+    border-radius: 12px;
+    padding: 22px 24px;
+    font-family: var(--mono); font-size: 13.5px; line-height: 1.85;
+    color: var(--fg); overflow-x: auto;
+  }
+  pre .c { color: var(--fg-faint); }
+  .req { margin-top: 22px; font-size: 13.5px; color: var(--fg-faint); }
+
+  /* ---------------- keyboard ---------------- */
+
+  .keys { display: flex; flex-wrap: wrap; gap: 9px; margin-top: 8px; }
+  kbd {
+    font-family: var(--mono); font-size: 12.5px;
+    padding: 7px 11px; border-radius: 8px;
+    background: var(--bg-lift);
+    border: 1px solid var(--line);
+    border-bottom-width: 2px;
+    color: var(--fg-dim);
+  }
+  kbd b { color: var(--fg); font-weight: 500; }
+
+  /* ---------------- footer ---------------- */
+
+  footer { border-top: 1px solid var(--line-soft); padding: 44px 0 60px; }
+  footer .wrap {
+    display: flex; justify-content: space-between;
+    align-items: center; gap: 20px; flex-wrap: wrap;
+  }
+  footer p, footer a { font-size: 13.5px; color: var(--fg-faint); }
+  footer a:hover { color: var(--fg); }
+  .flinks { display: flex; gap: 24px; }
+
+  /* ---------------- motion ---------------- */
+
+  .reveal { opacity: 0; transform: translateY(18px); transition: opacity .7s ease, transform .7s ease; }
+  .reveal.in { opacity: 1; transform: none; }
+
+  @media (prefers-reduced-motion: reduce) {
+    html { scroll-behavior: auto; }
+    .reveal { opacity: 1; transform: none; transition: none; }
+  }
+
+  /* ---------------- responsive ---------------- */
+
+  @media (max-width: 900px) {
+    .feature .wrap { grid-template-columns: 1fr; gap: 40px; }
+    .feature .copy-col { position: static; }
+    .hero { padding-top: 84px; }
+    .hero-shot { margin-top: 56px; }
+    .narrative { padding: 88px 0 70px; }
+    .nav .hide-sm { display: none; }
+  }
+  @media (max-width: 560px) {
+    :root { --gutter: 20px; }
+    .caps ul { grid-template-columns: 1fr; }
+    .cmd { font-size: 12px; padding-left: 14px; }
+  }
+</style>
+</head>
+<body>
+
+<header>
+  <div class="wrap bar">
+    <a class="wordmark" href="/promptbar-landing/">
+      <img src="assets/icon.png" alt="">
+      <span>PromptBar</span>
+    </a>
+    <nav class="nav">
+      <a class="hide-sm" href="#how">How it works</a>
+      <a class="hide-sm" href="#privacy">Privacy</a>
+      <a href="https://github.com/tornikegomareli/PromptBar">GitHub</a>
+      <a class="btn btn-solid" href="#install">Install</a>
+    </nav>
+  </div>
+</header>
+
+<main>
+
+  <section class="hero">
+    <div class="wrap">
+      <span class="eyebrow">macOS · runs on your Mac</span>
+      <h1>Turn rough thoughts<br>into prompts <em>that work</em></h1>
+      <p class="lede">
+        PromptBar is a prompt compiler for macOS. Copy a half-formed instruction,
+        press a shortcut, and get three prompts an AI can actually execute — then
+        one keystroke puts it on your clipboard.
+      </p>
+
+      <div class="cta">
+        <button class="cmd" id="cmd" type="button" aria-label="Copy install command">
+          <span class="dollar">$</span>
+          <span id="cmdtext">brew install --cask tornikegomareli/tap/promptbar</span>
+          <span class="copy" id="copylabel">Copy</span>
+        </button>
+        <a class="btn" href="https://github.com/tornikegomareli/PromptBar">View source</a>
+      </div>
+
+      <div class="hero-shot reveal">
+        <div class="frame"><img src="assets/result.png" alt="The PromptBar panel showing a rewritten prompt with Balanced, Structured and Minimal variants" width="1600" height="606"></div>
+      </div>
+    </div>
+  </section>
+
+  <div class="strip">
+    <div class="wrap">
+      <span>Apple Foundation Models</span>
+      <span>No account</span>
+      <span>No network requests</span>
+      <span>Open source</span>
+    </div>
+  </div>
+
+  <section class="narrative">
+    <div class="wrap">
+      <p class="reveal">
+        PromptBar <b>reads<sup>01</sup></b> what you roughly wrote,
+        <b>rewrites<sup>02</sup></b> it three different ways, and
+        <b>hands back<sup>03</sup></b> the one you pick — without inventing a thing.
+      </p>
+    </div>
+  </section>
+
+  <section class="feature" id="how">
+    <div class="wrap">
+      <div class="copy-col reveal">
+        <span class="eyebrow">01</span>
+        <h2>Write it badly. That's the point.</h2>
+        <p class="body">
+          Paste a rough note or type one sentence. PromptBar checks it locally before
+          the model runs, telling you what the instruction is still missing — the
+          output format, the constraints, the success criteria.
+        </p>
+        <div class="caps">
+          <span>Before it generates</span>
+          <hr>
+          <ul>
+            <li>Clipboard or typed input</li>
+            <li>Deterministic prompt check</li>
+            <li>Target profiles</li>
+            <li>Balanced / Structured / Minimal</li>
+          </ul>
+        </div>
+      </div>
+      <div class="reveal">
+        <div class="frame"><img src="assets/input.png" alt="PromptBar input panel asking what you want the AI to do" loading="lazy" width="1600" height="765"></div>
+      </div>
+    </div>
+  </section>
+
+  <section class="feature">
+    <div class="wrap">
+      <div class="copy-col reveal">
+        <span class="eyebrow">02</span>
+        <h2>Three prompts that genuinely differ</h2>
+        <p class="body">
+          Not three paraphrases. Minimal keeps your wording. Balanced adds context as
+          prose. Structured emits real sections — Objective, Context, Requirements,
+          Constraints, Expected output. Each is generated against its own contract,
+          so they differ by construction.
+        </p>
+        <div class="caps">
+          <span>What it will never do</span>
+          <hr>
+          <ul>
+            <li>Invent requirements</li>
+            <li>Pick a tone or word count</li>
+            <li>Add role-play preambles</li>
+            <li>Reinterpret your wording</li>
+          </ul>
+        </div>
+      </div>
+      <div class="reveal">
+        <div class="frame"><img src="assets/result.png" alt="Three enhanced prompt variants with detected intent and missing context" loading="lazy" width="1600" height="606"></div>
+      </div>
+    </div>
+  </section>
+
+  <section class="feature">
+    <div class="wrap">
+      <div class="copy-col reveal">
+        <span class="eyebrow">03</span>
+        <h2>Copy it and get on with your work</h2>
+        <p class="body">
+          The whole loop is a shortcut, an arrow key and Return. There is a second
+          shortcut that skips the window entirely and rewrites your clipboard in
+          place, keeping a restore point.
+        </p>
+        <div class="keys" style="margin-top:30px">
+          <kbd><b>⇧⌥Space</b> open</kbd>
+          <kbd><b>⌃⌥P</b> instant</kbd>
+          <kbd><b>⌘1–3</b> pick</kbd>
+          <kbd><b>⇥</b> edit</kbd>
+          <kbd><b>↵</b> copy &amp; close</kbd>
+          <kbd><b>esc</b> dismiss</kbd>
+        </div>
+        <div class="caps">
+          <span>Lives in the menu bar</span>
+          <hr>
+          <ul>
+            <li>No Dock icon</li>
+            <li>Optional local history</li>
+            <li>Per-app exclusions</li>
+            <li>Launch at login</li>
+          </ul>
+        </div>
+      </div>
+      <div class="reveal">
+        <div class="frame"><img src="assets/settings.png" alt="PromptBar settings, showing shortcuts and defaults" loading="lazy" width="1600" height="859"></div>
+      </div>
+    </div>
+  </section>
+
+  <section class="privacy" id="privacy">
+    <div class="wrap">
+      <span class="eyebrow">Privacy</span>
+      <h2>Nothing to send.<br><em>Nothing to trust.</em></h2>
+      <div class="cards">
+        <div class="card reveal">
+          <h3>It runs on your Mac</h3>
+          <p>Enhancement uses Apple's on-device Foundation Models. There is no server, so there is no request to inspect.</p>
+        </div>
+        <div class="card reveal">
+          <h3>No account, ever</h3>
+          <p>Nothing to sign into and no key to paste. Install it and press the shortcut.</p>
+        </div>
+        <div class="card reveal">
+          <h3>Your clipboard is not watched</h3>
+          <p>PromptBar reads the pasteboard only in the moment you invoke it — never in the background.</p>
+        </div>
+        <div class="card reveal">
+          <h3>History is off by default</h3>
+          <p>If you turn it on it stays in the app container, with retention limits and apps you can exclude outright.</p>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <section class="install" id="install">
+    <div class="wrap">
+      <span class="eyebrow">Install</span>
+      <h2>One command.</h2>
+      <p>Signed with a Developer ID and notarized by Apple, so it opens without a Gatekeeper prompt.</p>
+<pre><span class="c"># add the tap once</span>
+brew tap tornikegomareli/tap
+
+<span class="c"># install</span>
+brew install --cask promptbar</pre>
+      <p class="req">Requires macOS 26 on Apple silicon, with Apple Intelligence enabled.</p>
+      <div class="cta" style="margin-top:34px">
+        <a class="btn btn-solid" href="https://github.com/tornikegomareli/PromptBar/releases/latest">Download the latest release</a>
+        <a class="btn" href="https://github.com/tornikegomareli/PromptBar">Read the source</a>
+      </div>
+    </div>
+  </section>
+
+</main>
+
+<footer>
+  <div class="wrap">
+    <p>PromptBar — MIT licensed. Built by <a href="https://github.com/tornikegomareli">Tornike Gomareli</a>.</p>
+    <div class="flinks">
+      <a href="https://github.com/tornikegomareli/PromptBar">GitHub</a>
+      <a href="https://github.com/tornikegomareli/PromptBar/releases">Releases</a>
+      <a href="https://github.com/tornikegomareli/PromptBar/issues">Issues</a>
+    </div>
+  </div>
+</footer>
+
+<script>
+  // Copy the install command.
+  (function () {
+    var btn = document.getElementById('cmd');
+    var label = document.getElementById('copylabel');
+    var text = document.getElementById('cmdtext').textContent.trim();
+    btn.addEventListener('click', function () {
+      navigator.clipboard.writeText(text).then(function () {
+        btn.classList.add('copied');
+        label.textContent = 'Copied';
+        setTimeout(function () {
+          btn.classList.remove('copied');
+          label.textContent = 'Copy';
+        }, 1800);
+      }).catch(function () {
+        label.textContent = 'Press ⌘C';
+      });
+    });
+  })();
+
+  // Reveal on scroll.
+  (function () {
+    var els = document.querySelectorAll('.reveal');
+    if (!('IntersectionObserver' in window)) {
+      els.forEach(function (el) { el.classList.add('in'); });
+      return;
+    }
+    var io = new IntersectionObserver(function (entries) {
+      entries.forEach(function (e) {
+        if (e.isIntersecting) { e.target.classList.add('in'); io.unobserve(e.target); }
+      });
+    }, { rootMargin: '0px 0px -12% 0px', threshold: 0.05 });
+    els.forEach(function (el) { io.observe(el); });
+  })();
+</script>
+
+</body>
+</html>
