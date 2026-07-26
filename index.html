@@ -293,44 +293,10 @@
   }
   kbd b { color: var(--fg); font-weight: 500; }
 
-  /* ---------------- selection demo ---------------- */
-
-  /* A styled demonstration, not a screenshot: the chip and the highlight are
-     drawn in CSS, so it stays sharp and needs no asset. */
-  .seldemo {
-    position: relative;
-    border: 1px solid var(--line);
-    border-radius: 16px;
-    padding: 78px clamp(20px, 3vw, 38px) 42px;
-    background:
-      radial-gradient(120% 105% at 12% -10%, rgba(104,116,255,0.16), transparent 58%),
-      linear-gradient(180deg, #17171d, #101014);
-    box-shadow: 0 40px 120px rgba(0,0,0,0.6);
-    overflow: hidden;
-  }
-  .seldemo p {
-    font-size: clamp(15.5px, 1.9vw, 20px);
-    line-height: 1.8;
-    color: var(--fg-faint);
-    text-wrap: pretty;
-  }
-  .seldemo .sel {
-    color: var(--fg);
-    background: rgba(104,116,255,0.28);
-    box-shadow: 0 0 0 2px rgba(104,116,255,0.28);
-    border-radius: 2px;
-  }
-  .chipdemo {
-    position: absolute;
-    top: 26px; left: clamp(20px, 3vw, 38px);
-    display: inline-flex; align-items: center; gap: 7px;
-    padding: 7px 11px; border-radius: 8px;
-    background: #141416;
-    border: 1px solid rgba(255,255,255,0.17);
-    font-size: 13.5px; font-weight: 500; color: var(--fg);
-    box-shadow: 0 12px 28px rgba(0,0,0,0.6);
-  }
-  .chipdemo svg { width: 15px; height: 15px; display: block; }
+  /* The selection screenshot is an opaque capture, unlike the alpha panel
+     shots, so it needs its own corner radius to read as a window rather than a
+     black rectangle sitting on the lit frame. */
+  .frame img.shot-opaque { border-radius: 10px; }
 
   /* ---------------- footer ---------------- */
 
@@ -553,19 +519,7 @@
         </div>
       </div>
       <div class="reveal">
-        <div class="seldemo">
-          <span class="chipdemo">
-            <svg viewBox="0 0 24 24" fill="none" aria-hidden="true">
-              <path d="M10 5H7.5A2.5 2.5 0 0 0 5 7.5v9A2.5 2.5 0 0 0 7.5 19H10M13.5 12H19M16 9l3 3-3 3"
-                    stroke="#6874ff" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
-            </svg>
-            Compile
-          </span>
-          <p>
-            Hey — can you <span class="sel">look at the sync code and tell me why it
-            drops records when the network flaps</span>, and write up what you find?
-          </p>
-        </div>
+        <div class="frame"><img class="shot-opaque" src="assets/selection.png" alt="A sentence selected in another app, with PromptBar's Compile chip floating just above it" loading="lazy" width="1600" height="330"></div>
       </div>
     </div>
   </section>
