@@ -1,0 +1,46 @@
+# PromptBar
+
+> A native macOS menu bar prompt compiler. Copy a half-formed instruction, press a
+> shortcut, and get three prompts an AI can actually execute. Enhancement runs
+> entirely on Apple's on-device Foundation Models — no account, no network requests.
+
+PromptBar is free and MIT licensed. It requires macOS 26 on Apple silicon with
+Apple Intelligence enabled.
+
+## What it does
+
+- Rewrites a rough instruction into three variants that differ by construction, not
+  by chance: **Minimal** keeps your wording, **Balanced** adds context as prose, and
+  **Structured** emits labelled sections (Objective, Context, Requirements,
+  Constraints, Expected output). Each is a separate guided-generation field with its
+  own structural contract.
+- Never invents context. No fabricated word counts, tones, audiences or deadlines;
+  missing details become bracketed placeholders and ambiguous terms keep the user's
+  own wording.
+- Runs a deterministic local prompt check before the model runs.
+- **Instant Enhance** (⇧⌥E) rewrites the clipboard in place with no window, keeping a
+  restore point.
+- An optional **Compile chip** appears beside text selected in any app. It is off by
+  default and is the only feature that requests a permission (Accessibility).
+- Optional local history, off until enabled, stored only in the app container with
+  retention limits and per-app exclusions.
+
+## Privacy
+
+There is no server, so there is no request to inspect. The pasteboard is read only at
+the moment of invocation, never in the background. Password fields and excluded apps
+are never read. Nothing is stored or transmitted.
+
+## Limits
+
+The on-device session shares one 4,096-token window between the instructions, the
+schema, the input and all three outputs, which puts the practical input ceiling around
+4,000 characters. PromptBar warns before the limit and refuses rather than truncating.
+
+## Links
+
+- Landing page: https://tornikegomareli.github.io/promptbar-landing/
+- Source code: https://github.com/tornikegomareli/PromptBar
+- Releases: https://github.com/tornikegomareli/PromptBar/releases
+- Install: `brew tap tornikegomareli/tap && brew install --cask promptbar`
+- Author: Tornike Gomareli, https://github.com/tornikegomareli

@@ -5,21 +5,64 @@
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <title>PromptBar › Turn rough thoughts into prompts that work</title>
 <meta name="description" content="A native macOS menu bar prompt compiler. Press a shortcut, get three usable prompts, copy one. Runs entirely on Apple's on-device model — no account, no network.">
+<link rel="canonical" href="https://tornikegomareli.github.io/promptbar-landing/">
 <link rel="icon" href="assets/icon.svg" type="image/svg+xml">
 <link rel="apple-touch-icon" href="assets/icon.png">
 
 <meta property="og:type" content="website">
+<meta property="og:site_name" content="PromptBar">
 <meta property="og:title" content="PromptBar — Turn rough thoughts into prompts that work">
-<meta property="og:description" content="A native macOS menu bar prompt compiler, powered by Apple's on-device model.">
-<meta property="og:image" content="https://tornikegomareli.github.io/promptbar-landing/assets/result.png">
+<meta property="og:description" content="A native macOS menu bar prompt compiler. Press a shortcut, get three usable prompts, copy one. Runs entirely on Apple's on-device model — no account, no network.">
+<meta property="og:image" content="https://tornikegomareli.github.io/promptbar-landing/assets/social-card.png">
+<meta property="og:image:width" content="1200">
+<meta property="og:image:height" content="630">
+<meta property="og:image:alt" content="The PromptBar panel showing a rough instruction rewritten into Balanced, Structured and Minimal variants">
 <meta property="og:url" content="https://tornikegomareli.github.io/promptbar-landing/">
 <meta name="twitter:card" content="summary_large_image">
+<meta name="twitter:title" content="PromptBar — Turn rough thoughts into prompts that work">
+<meta name="twitter:description" content="A native macOS menu bar prompt compiler. Press a shortcut, get three usable prompts, copy one. Runs entirely on Apple's on-device model — no account, no network.">
+<meta name="twitter:image" content="https://tornikegomareli.github.io/promptbar-landing/assets/social-card.png">
+<meta name="twitter:image:alt" content="The PromptBar panel showing a rough instruction rewritten into Balanced, Structured and Minimal variants">
 
-<link rel="preconnect" href="https://fonts.googleapis.com">
-<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-<link href="https://fonts.googleapis.com/css2?family=Instrument+Serif:ital@0;1&family=Inter:wght@400;500;600&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
+<!-- Fonts are self-hosted Latin subsets (assets/fonts/LICENSE.md). A page whose
+     pitch is "nothing leaves your Mac" should not open a connection to a font
+     CDN to render its own headline. Preload the three faces the hero needs —
+     the h1 is the LCP element, and it is set in Instrument Serif roman+italic. -->
+<link rel="preload" href="assets/fonts/inter-latin.woff2" as="font" type="font/woff2" crossorigin>
+<link rel="preload" href="assets/fonts/instrument-serif-latin.woff2" as="font" type="font/woff2" crossorigin>
+<link rel="preload" href="assets/fonts/instrument-serif-italic-latin.woff2" as="font" type="font/woff2" crossorigin>
 
 <style>
+  /* Latin subset only. The Mac keyboard glyphs (⌘⌥⇧⇥↵) are absent from Google's
+     latin and latin-ext subsets alike, so they fall through to ui-monospace —
+     exactly as they did when these files were served from fonts.gstatic.com. */
+  @font-face {
+    font-family: 'Instrument Serif';
+    font-style: normal; font-weight: 400; font-display: swap;
+    src: url(assets/fonts/instrument-serif-latin.woff2) format('woff2');
+    unicode-range: U+0000-00FF, U+0131, U+0152-0153, U+02BB-02BC, U+02C6, U+02DA, U+02DC, U+0304, U+0308, U+0329, U+2000-206F, U+2074, U+20AC, U+2122, U+2191, U+2193, U+2212, U+2215, U+FEFF, U+FFFD;
+  }
+  @font-face {
+    font-family: 'Instrument Serif';
+    font-style: italic; font-weight: 400; font-display: swap;
+    src: url(assets/fonts/instrument-serif-italic-latin.woff2) format('woff2');
+    unicode-range: U+0000-00FF, U+0131, U+0152-0153, U+02BB-02BC, U+02C6, U+02DA, U+02DC, U+0304, U+0308, U+0329, U+2000-206F, U+2074, U+20AC, U+2122, U+2191, U+2193, U+2212, U+2215, U+FEFF, U+FFFD;
+  }
+  /* Inter and JetBrains Mono ship as variable fonts — one file covers the whole
+     weight range, so these are ranges rather than three duplicate blocks. */
+  @font-face {
+    font-family: 'Inter';
+    font-style: normal; font-weight: 400 600; font-display: swap;
+    src: url(assets/fonts/inter-latin.woff2) format('woff2');
+    unicode-range: U+0000-00FF, U+0131, U+0152-0153, U+02BB-02BC, U+02C6, U+02DA, U+02DC, U+0304, U+0308, U+0329, U+2000-206F, U+2074, U+20AC, U+2122, U+2191, U+2193, U+2212, U+2215, U+FEFF, U+FFFD;
+  }
+  @font-face {
+    font-family: 'JetBrains Mono';
+    font-style: normal; font-weight: 400 500; font-display: swap;
+    src: url(assets/fonts/jetbrains-mono-latin.woff2) format('woff2');
+    unicode-range: U+0000-00FF, U+0131, U+0152-0153, U+02BB-02BC, U+02C6, U+02DA, U+02DC, U+0304, U+0308, U+0329, U+2000-206F, U+2074, U+20AC, U+2122, U+2191, U+2193, U+2212, U+2215, U+FEFF, U+FFFD;
+  }
+
   *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
 
   :root {
@@ -161,6 +204,7 @@
     overflow: hidden;
     box-shadow: 0 40px 120px rgba(0,0,0,0.6);
   }
+  .frame picture { display: block; }
   .frame img {
     display: block; width: 100%; height: auto;
     filter: drop-shadow(0 22px 48px rgba(0,0,0,0.6));
@@ -258,6 +302,23 @@
   .card h3 { font-size: 15px; font-weight: 600; margin-bottom: 9px; }
   .card p { font-size: 14.5px; color: var(--fg-dim); }
 
+  /* ---------------- questions ---------------- */
+
+  .faq { padding: 110px 0; border-top: 1px solid var(--line-soft); }
+  .faq h2 {
+    font-family: var(--serif); font-weight: 400;
+    font-size: clamp(34px, 5vw, 58px);
+    line-height: 1.02; letter-spacing: -0.02em;
+    margin-top: 22px;
+  }
+  .qa {
+    margin-top: 54px; display: grid;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: 36px 60px;
+  }
+  .qa h3 { font-size: 16px; font-weight: 600; margin-bottom: 10px; }
+  .qa p { font-size: 15px; color: var(--fg-dim); }
+
   /* ---------------- install ---------------- */
 
   .install { padding: 110px 0; border-top: 1px solid var(--line-soft); text-align: center; }
@@ -329,6 +390,7 @@
     .hero-shot { margin-top: 56px; }
     .narrative { padding: 88px 0 70px; }
     .nav .hide-sm { display: none; }
+    .qa { grid-template-columns: 1fr; gap: 30px; }
   }
   @media (max-width: 560px) {
     :root { --gutter: 20px; }
@@ -338,18 +400,66 @@
     .cmd { font-size: 12px; padding-left: 14px; }
   }
 </style>
+
+<!-- Every claim below is one the page itself makes. Deliberately no
+     aggregateRating/review: there are no ratings to report, and inventing them
+     is both schema spam and a manual-action risk. -->
+<script type="application/ld+json">
+{
+  "@context": "https://schema.org",
+  "@type": "SoftwareApplication",
+  "@id": "https://tornikegomareli.github.io/promptbar-landing/#promptbar",
+  "name": "PromptBar",
+  "url": "https://tornikegomareli.github.io/promptbar-landing/",
+  "description": "A native macOS menu bar prompt compiler. Copy a half-formed instruction, press a shortcut, and get three prompts an AI can actually execute. Enhancement runs entirely on Apple's on-device Foundation Models — no account and no network requests.",
+  "applicationCategory": "UtilitiesApplication",
+  "applicationSubCategory": "Productivity",
+  "operatingSystem": "macOS 26.0",
+  "processorRequirements": "Apple silicon",
+  "softwareRequirements": "macOS 26 on Apple silicon, with Apple Intelligence enabled",
+  "isAccessibleForFree": true,
+  "license": "https://opensource.org/licenses/MIT",
+  "screenshot": "https://tornikegomareli.github.io/promptbar-landing/assets/social-card.png",
+  "downloadUrl": "https://github.com/tornikegomareli/PromptBar/releases/latest",
+  "installUrl": "https://github.com/tornikegomareli/PromptBar/releases/latest",
+  "codeRepository": "https://github.com/tornikegomareli/PromptBar",
+  "offers": {
+    "@type": "Offer",
+    "price": "0",
+    "priceCurrency": "USD",
+    "availability": "https://schema.org/InStock"
+  },
+  "author": {
+    "@type": "Person",
+    "name": "Tornike Gomareli",
+    "url": "https://github.com/tornikegomareli"
+  },
+  "featureList": [
+    "Rewrites a rough instruction into Balanced, Structured and Minimal prompt variants",
+    "Runs on Apple's on-device Foundation Models, with no network requests",
+    "Deterministic local prompt check before the model runs",
+    "Instant Enhance rewrites the clipboard in place, with a restore point",
+    "Compile chip beside a selection in any app, off by default",
+    "Keyboard-first: open, pick a variant, copy and close",
+    "Optional local history with retention limits and per-app exclusions"
+  ]
+}
+</script>
 </head>
 <body>
 
 <header>
   <div class="wrap bar">
     <a class="wordmark" href="/promptbar-landing/">
-      <img src="assets/icon.png" alt="">
+      <!-- alt is empty on purpose: the sibling wordmark already names this link,
+           so the icon is decorative. SVG, not the 256px png — it renders at 26px. -->
+      <img src="assets/icon.svg" alt="" width="26" height="26">
       <span>PromptBar</span>
     </a>
     <nav class="nav">
       <a class="hide-sm" href="#how">How it works</a>
       <a class="hide-sm" href="#privacy">Privacy</a>
+      <a class="hide-sm" href="#questions">Questions</a>
       <a href="https://github.com/tornikegomareli/PromptBar">GitHub</a>
       <a class="btn btn-solid" href="#install">Install</a>
     </nav>
@@ -378,7 +488,13 @@
       </div>
 
       <div class="hero-shot reveal">
-        <div class="frame"><img src="assets/result.png" alt="The PromptBar panel showing a rewritten prompt with Balanced, Structured and Minimal variants" width="1600" height="606"></div>
+        <div class="frame"><picture>
+          <source type="image/webp" srcset="assets/result-800.webp 800w, assets/result-1200.webp 1200w, assets/result-1600.webp 1600w" sizes="(min-width: 1120px) 972px, (max-width: 560px) calc(100vw - 72px), calc(92.8vw - 56px)">
+          <!-- On a narrow viewport this image, not the h1, is the LCP element:
+               it spans the full width there. Hence fetchpriority; the h1 wins on
+               desktop and is covered by the font preloads instead. -->
+          <img src="assets/result.png" alt="The PromptBar panel showing a rewritten prompt with Balanced, Structured and Minimal variants" width="1600" height="606" fetchpriority="high">
+        </picture></div>
       </div>
     </div>
   </section>
@@ -424,7 +540,10 @@
         </div>
       </div>
       <div class="reveal">
-        <div class="frame"><img src="assets/input.png" alt="PromptBar input panel asking what you want the AI to do" loading="lazy" width="1600" height="765"></div>
+        <div class="frame"><picture>
+          <source type="image/webp" srcset="assets/input-800.webp 800w, assets/input-1200.webp 1200w, assets/input-1600.webp 1600w" sizes="(min-width: 901px) 493px, (max-width: 560px) calc(100vw - 72px), calc(92.8vw - 56px)">
+          <img src="assets/input.png" alt="PromptBar input panel asking what you want the AI to do" loading="lazy" width="1600" height="765">
+        </picture></div>
       </div>
     </div>
   </section>
@@ -452,7 +571,10 @@
         </div>
       </div>
       <div class="reveal">
-        <div class="frame"><img src="assets/result.png" alt="Three enhanced prompt variants with detected intent and missing context" loading="lazy" width="1600" height="606"></div>
+        <div class="frame"><picture>
+          <source type="image/webp" srcset="assets/result-800.webp 800w, assets/result-1200.webp 1200w, assets/result-1600.webp 1600w" sizes="(min-width: 901px) 493px, (max-width: 560px) calc(100vw - 72px), calc(92.8vw - 56px)">
+          <img src="assets/result.png" alt="Three enhanced prompt variants with detected intent and missing context" loading="lazy" width="1600" height="606">
+        </picture></div>
       </div>
     </div>
   </section>
@@ -487,7 +609,10 @@
         </div>
       </div>
       <div class="reveal">
-        <div class="frame"><img src="assets/settings.png" alt="PromptBar settings, showing shortcuts and defaults" loading="lazy" width="1600" height="859"></div>
+        <div class="frame"><picture>
+          <source type="image/webp" srcset="assets/settings-800.webp 800w, assets/settings-1200.webp 1200w, assets/settings-1600.webp 1600w" sizes="(min-width: 901px) 493px, (max-width: 560px) calc(100vw - 72px), calc(92.8vw - 56px)">
+          <img src="assets/settings.png" alt="PromptBar settings, showing shortcuts and defaults" loading="lazy" width="1600" height="859">
+        </picture></div>
       </div>
     </div>
   </section>
@@ -519,7 +644,10 @@
         </div>
       </div>
       <div class="reveal">
-        <div class="frame"><img class="shot-opaque" src="assets/selection.png" alt="A sentence selected in another app, with PromptBar's Compile chip floating just above it" loading="lazy" width="1600" height="330"></div>
+        <div class="frame"><picture>
+          <source type="image/webp" srcset="assets/selection-800.webp 800w, assets/selection-1200.webp 1200w, assets/selection-1600.webp 1600w" sizes="(min-width: 901px) 493px, (max-width: 560px) calc(100vw - 72px), calc(92.8vw - 56px)">
+          <img class="shot-opaque" src="assets/selection.png" alt="A sentence selected in another app, with PromptBar's Compile chip floating just above it" loading="lazy" width="1600" height="330">
+        </picture></div>
       </div>
     </div>
   </section>
@@ -548,6 +676,50 @@
         <div class="card reveal">
           <h3>History is off by default</h3>
           <p>If you turn it on it stays in the app container, with retention limits and apps you can exclude outright.</p>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- Plain prose, deliberately not FAQPage markup: Google retired FAQ rich
+       results for every site in May 2026, so the schema buys nothing. These are
+       here because they are the questions people actually ask. -->
+  <section class="faq" id="questions">
+    <div class="wrap">
+      <span class="eyebrow">Questions</span>
+      <h2>The short answers.</h2>
+      <div class="qa">
+        <div class="reveal">
+          <h3>Does it need Apple Intelligence turned on?</h3>
+          <p>Yes. Enhancement runs on Apple's on-device Foundation Models, which macOS only exposes once Apple Intelligence is enabled. If it is off, PromptBar tells you and offers to open the right Settings pane rather than failing quietly.</p>
+        </div>
+        <div class="reveal">
+          <h3>Does anything leave my Mac?</h3>
+          <p>No. There is no server to send anything to and no account to hold it. The model runs locally, so PromptBar keeps working with the network off.</p>
+        </div>
+        <div class="reveal">
+          <h3>How long can the input be?</h3>
+          <p>Around 4,000 characters. The on-device session shares one 4,096-token window between the instructions, the schema, your input and all three outputs. PromptBar warns as you approach the ceiling and refuses rather than silently truncating your text.</p>
+        </div>
+        <div class="reveal">
+          <h3>How are the three variants actually different?</h3>
+          <p>Each is generated as its own field against its own structural contract, not paraphrased from a shared draft. Minimal keeps your wording, Balanced adds context as prose, and Structured emits labelled sections. They differ by construction.</p>
+        </div>
+        <div class="reveal">
+          <h3>What permissions does it ask for?</h3>
+          <p>One, and only if you opt in. The Compile chip needs Accessibility access to read the selected text, and it stays off until you switch it on. The ⇧⌥Space shortcut needs no permission at all.</p>
+        </div>
+        <div class="reveal">
+          <h3>Why does no chip appear in some apps?</h3>
+          <p>Because they expose no Accessibility text — many Electron apps do not. PromptBar will not press ⌘C on your behalf to work around it, so those apps simply get no chip instead of a clipboard surprise.</p>
+        </div>
+        <div class="reveal">
+          <h3>What does it cost?</h3>
+          <p>Nothing. It is free and MIT licensed, and the model it uses is already on your Mac. There is no paid tier and no usage metering.</p>
+        </div>
+        <div class="reveal">
+          <h3>Which Macs can run it?</h3>
+          <p>Apple silicon Macs on macOS 26 or later. The on-device model requires Apple silicon, so Intel Macs are not supported.</p>
         </div>
       </div>
     </div>
